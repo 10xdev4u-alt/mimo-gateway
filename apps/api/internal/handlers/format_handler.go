@@ -13,7 +13,7 @@ func HandleFormatJSON(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		BadRequestError(c, err.Error())
+		BadRequest(c, err.Error())
 		return
 	}
 

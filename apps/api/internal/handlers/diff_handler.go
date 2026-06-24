@@ -14,7 +14,7 @@ func HandleDiffText(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		BadRequestError(c, err.Error())
+		BadRequest(c, err.Error())
 		return
 	}
 
@@ -33,7 +33,6 @@ func HandleDiffText(c *gin.Context) {
 			removed++
 		}
 	}
-	removed += len(lines2) - len(lines1)
 
 	c.JSON(http.StatusOK, gin.H{
 		"lines1":  len(lines1),
