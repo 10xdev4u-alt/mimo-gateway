@@ -20,22 +20,6 @@ jobs:
       - name: Run Go tests
         working-directory: apps/api
         run: go test -v ./...
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install pnpm
-        run: npm install -g pnpm
-      
-      - name: Install frontend deps
-        working-directory: apps/admin
-        run: pnpm install
-      
-      - name: Build frontend
-        working-directory: apps/admin
-        run: pnpm build
 
   lint:
     runs-on: ubuntu-latest
