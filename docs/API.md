@@ -1,4 +1,4 @@
-# MiMo Gateway API Reference
+# API Reference
 
 ## Base URL
 ```
