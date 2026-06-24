@@ -10,8 +10,8 @@ func HandleValidateRequest(c *gin.Context) {
 	var req ChatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"valid":  false,
-			"error":  err.Error(),
+			"valid": false,
+			"error": err.Error(),
 		})
 		return
 	}

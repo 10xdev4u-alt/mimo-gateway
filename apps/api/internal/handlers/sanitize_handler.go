@@ -13,7 +13,7 @@ func HandleSanitizeInput(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		BadRequestError(c, err.Error())
+		BadRequest(c, err.Error())
 		return
 	}
 
@@ -22,7 +22,7 @@ func HandleSanitizeInput(c *gin.Context) {
 	sanitized = strings.ReplaceAll(sanitized, "</script>", "")
 
 	c.JSON(http.StatusOK, gin.H{
-		"original":   req.Input,
-		"sanitized":  sanitized,
+		"original":  req.Input,
+		"sanitized": sanitized,
 	})
 }
