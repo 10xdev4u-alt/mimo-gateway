@@ -24,6 +24,6 @@ func SendSuccess(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, BuildSuccessResponse(data))
 }
 
-func SendError2(c *gin.Context, status int, message string) {
+func SendErrorResponse(c *gin.Context, status int, message string) {
 	c.JSON(status, BuildErrorResponse(message))
 }
