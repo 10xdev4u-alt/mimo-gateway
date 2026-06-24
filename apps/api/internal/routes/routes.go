@@ -441,7 +441,7 @@ func Setup(db *gorm.DB, cfg *config.Config, svc *Services) *gin.Engine {
 	v1 := r.Group("/v1")
 	{
 		v1.POST("/chat/completions", mimoProxy.HandleChat)
-		v1.POST("/chat/completions/stream", mimoProxy.HandleStreamChat)
+		v1.POST("/chat/completions/stream", HandleStreamChat)
 		v1.GET("/models", mimoProxy.HandleModels)
 	}
 	r.GET("/health", mimoProxy.HandleHealth)
