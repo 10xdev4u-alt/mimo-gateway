@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 )
 
 type Backup struct {

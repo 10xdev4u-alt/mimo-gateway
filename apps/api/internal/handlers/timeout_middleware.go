@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"context"
-	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 )
 
 func TimeoutMiddleware(timeout time.Duration) gin.HandlerFunc {
