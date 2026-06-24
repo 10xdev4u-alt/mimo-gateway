@@ -1,0 +1,5 @@
+{
+  "architecture": "triple",
+  "frontend": "tanstack",
+  "version": "3.31.37"
+}
