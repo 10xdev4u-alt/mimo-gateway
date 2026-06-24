@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -18,13 +21,13 @@ type StreamEvent struct {
 func HandleStreamChat(c *gin.Context) {
 	var req ChatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		BadRequest(c, err.Error())
 		return
 	}
 
 	prompt := extractPrompt(req.Messages)
 	if prompt == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no user message"})
+		BadRequest(c, "no user message")
 		return
 	}
 
@@ -35,13 +38,12 @@ func HandleStreamChat(c *gin.Context) {
 	messageID := fmt.Sprintf("msg_%d", time.Now().UnixNano())
 	chunkSize := 30
 
-	text, err := runBinary(prompt)
+	text, err := runBinaryProxy(prompt)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		InternalError(c, err.Error())
 		return
 	}
 
-	// Send message_start
 	sendSSE(c, "message_start", map[string]interface{}{
 		"type": "message_start",
 		"message": map[string]interface{}{
@@ -50,38 +52,32 @@ func HandleStreamChat(c *gin.Context) {
 		},
 	})
 
-	// Send content_block_start
 	sendSSE(c, "content_block_start", map[string]interface{}{
 		"type": "content_block_start", "index": 0,
 		"content_block": map[string]interface{}{"type": "text", "text": ""},
 	})
 
-	// Send chunks
 	for i := 0; i < len(text); i += chunkSize {
 		end := i + chunkSize
 		if end > len(text) {
 			end = len(text)
 		}
-		chunk := text[i:end]
 		sendSSE(c, "content_block_delta", map[string]interface{}{
 			"type": "content_block_delta", "index": 0,
-			"delta": map[string]interface{}{"type": "text_delta", "text": chunk},
+			"delta": map[string]interface{}{"type": "text_delta", "text": text[i:end]},
 		})
 	}
 
-	// Send content_block_stop
 	sendSSE(c, "content_block_stop", map[string]interface{}{
 		"type": "content_block_stop", "index": 0,
 	})
 
-	// Send message_delta
 	sendSSE(c, "message_delta", map[string]interface{}{
 		"type": "message_delta",
 		"delta": map[string]interface{}{"stop_reason": "end_turn"},
 		"usage": map[string]interface{}{"output_tokens": len(text) / 4},
 	})
 
-	// Send message_stop
 	sendSSE(c, "message_stop", map[string]interface{}{
 		"type": "message_stop",
 	})
@@ -93,8 +89,8 @@ func sendSSE(c *gin.Context, event string, data interface{}) {
 	c.Writer.Flush()
 }
 
-func runBinary(prompt string) (string, error) {
-	bin := findMimoBinary()
+func runBinaryProxy(prompt string) (string, error) {
+	bin := findMimoBinaryProxy()
 	if bin == "" {
 		return "", fmt.Errorf("mimo binary not found")
 	}
@@ -134,4 +130,18 @@ func runBinary(prompt string) (string, error) {
 	}
 
 	return output.String(), nil
+}
+
+func findMimoBinaryProxy() string {
+	home, _ := os.UserHomeDir()
+	candidates := []string{
+		home + "/.local/share/mise/installs/node/25.8.0/lib/node_modules/@mimo-ai/cli/bin/.mimocode",
+		"/usr/local/lib/node_modules/@mimo-ai/cli/bin/.mimocode",
+	}
+	for _, p := range candidates {
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	return ""
 }
