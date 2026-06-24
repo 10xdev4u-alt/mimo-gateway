@@ -12,7 +12,7 @@ import (
 func HandleImportCSV(c *gin.Context) {
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
-		BadRequestError(c, "no file provided")
+		BadRequest(c, "no file provided")
 		return
 	}
 	defer file.Close()
@@ -20,7 +20,7 @@ func HandleImportCSV(c *gin.Context) {
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		BadRequestError(c, "invalid CSV format")
+		BadRequest(c, "invalid CSV format")
 		return
 	}
 
@@ -34,13 +34,13 @@ func HandleImportCSV(c *gin.Context) {
 func HandleImportJSON(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		BadRequestError(c, "failed to read body")
+		BadRequest(c, "failed to read body")
 		return
 	}
 
 	var data interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
-		BadRequestError(c, "invalid JSON")
+		BadRequest(c, "invalid JSON")
 		return
 	}
 
