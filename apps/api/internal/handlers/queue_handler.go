@@ -25,17 +25,6 @@ func (q *RequestQueue) Enqueue(item string) bool {
 	return true
 }
 
-func (q *RequestQueue) Dequeue() (string, bool) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	if len(q.queue) == 0 {
-		return "", false
-	}
-	item := q.queue[0]
-	q.queue = q.queue[1:]
-	return item, true
-}
-
 func HandleQueueStats(c *gin.Context) {
 	requestQueue.mu.Lock()
 	size := len(requestQueue.queue)
