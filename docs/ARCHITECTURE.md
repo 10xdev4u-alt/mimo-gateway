@@ -1,14 +1,14 @@
-# MiMo Gateway Architecture
+# Architecture
 
 ## Overview
 
-MiMo Gateway is an OpenAI-compatible API proxy for the MiMo Auto Free API. It routes requests through the official `.mimocode` binary to bypass TLS fingerprinting (JA3) that blocks direct API calls.
+MiMo Gateway is an OpenAI-compatible API proxy for the MiMo Auto Free API.
 
 ## Components
 
-### Backend (Go + Grit)
+### Backend (Go + Gint)
 - **API Server**: Gin-based HTTP server on port 4200
-- **MiMo Proxy Handler**: Wraps the `.mimocode` binary
+- **MiMo Proxy Handler**: Wraps the .mimocode binary
 - **Auth System**: JWT-based authentication
 - **Observability**: Pulse integration for metrics
 
@@ -16,27 +16,23 @@ MiMo Gateway is an OpenAI-compatible API proxy for the MiMo Auto Free API. It ro
 - **Web App**: Public-facing interface (port 4201)
 - **Admin Dashboard**: Bifrost-themed admin panel (port 4202)
 
-## API Endpoints
+## Data Flow
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | /v1/chat/completions | OpenAI-compatible chat |
-| GET | /v1/models | List available models |
-| GET | /health | Gateway health check |
+1. Client sends request to /v1/chat/completions
+2. Proxy handler extracts prompt from messages
+3. Binary backend processes the request
+4. Response is returned in OpenAI format
 
 ## Binary Backend
 
-The gateway uses the `.mimocode` binary as a backend because:
-1. MiFE gateway blocks direct HTTP calls (JA3 fingerprinting)
+The gateway uses the .mimocode binary because:
+1. MiFE gateway blocks direct HTTP calls
 2. Only the compiled binary passes TLS verification
-3. Binary handles auth (fingerprint → JWT) automatically
+3. Binary handles auth automatically
 
-## Deployment
+## Security
 
-```bash
-# Docker
-docker compose up -d
-
-# Manual
-cd apps/api && go run cmd/server/main.go
-```
+- API key authentication
+- Rate limiting per IP
+- Input validation
+- Security headers
