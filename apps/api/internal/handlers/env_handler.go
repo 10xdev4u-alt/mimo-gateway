@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,22 +15,16 @@ func HandleEnvCheck(c *gin.Context) {
 	allSet := true
 
 	for _, key := range required {
-		val := getEnv(key, "")
-		status[key] = gin.H{
-			"set":   val != "",
-			"required": true,
-		}
+		val := os.Getenv(key)
+		status[key] = gin.H{"set": val != "", "required": true}
 		if val == "" {
 			allSet = false
 		}
 	}
 
 	for _, key := range optional {
-		val := getEnv(key, "")
-		status[key] = gin.H{
-			"set":   val != "",
-			"required": false,
-		}
+		val := os.Getenv(key)
+		status[key] = gin.H{"set": val != "", "required": false}
 	}
 
 	c.JSON(http.StatusOK, gin.H{

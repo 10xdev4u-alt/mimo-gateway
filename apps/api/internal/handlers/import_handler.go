@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,6 +46,5 @@ func HandleImportJSON(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "imported",
-		"type":   strings.ReplaceAll(strings.TrimLeft(reflect.TypeOf(data).String(), "*"), ".", "_"),
 	})
 }
