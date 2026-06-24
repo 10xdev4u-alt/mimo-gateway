@@ -18,8 +18,8 @@ type GatewayConfig struct {
 
 func LoadGatewayConfig() *GatewayConfig {
 	return &GatewayConfig{
-		Port:            getEnv("APP_PORT", "4200"),
-		BinPath:         getEnv("MIMO_BIN_PATH", ""),
+		Port:            getGatewayEnv("APP_PORT", "4200"),
+		BinPath:         getGatewayEnv("MIMO_BIN_PATH", ""),
 		RateLimit:       getEnvInt("RATE_LIMIT", 100),
 		RateWindow:      getEnvDuration("RATE_WINDOW", time.Minute),
 		AllowedOrigins:  getEnvList("CORS_ORIGINS", []string{"http://localhost:4201", "http://localhost:4202"}),
@@ -28,7 +28,7 @@ func LoadGatewayConfig() *GatewayConfig {
 	}
 }
 
-func getEnv(key, fallback string) string {
+func getGatewayEnv(key, fallback string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
 	}
