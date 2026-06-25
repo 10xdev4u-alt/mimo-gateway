@@ -39,11 +39,11 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@9.15.0
       - name: Install deps
-        working-directory: frontend
+        working-directory: apps/admin
         run: pnpm install --frozen-lockfile
       # Fail only on high/critical so noisy mediums don't block PRs.
       - name: Run npm audit (high+)
-        working-directory: frontend
+        working-directory: apps/admin
         run: pnpm audit --audit-level=high
 
   codeql:
