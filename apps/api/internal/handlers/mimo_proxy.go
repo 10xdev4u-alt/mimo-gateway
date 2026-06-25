@@ -31,6 +31,7 @@ func findMimoBinary() string {
 	home, _ := os.UserHomeDir()
 	candidates := []string{
 		filepath.Join(home, ".local/share/mise/installs/node/25.8.0/lib/node_modules/@mimo-ai/cli/bin/.mimocode"),
+		"/usr/local/bin/.mimocode",
 		"/usr/local/lib/node_modules/@mimo-ai/cli/bin/.mimocode",
 	}
 	for _, p := range candidates {
