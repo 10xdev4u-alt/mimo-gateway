@@ -1,93 +1,146 @@
-# mimo-gateway
+# MiMo Gateway
 
-Built with [Grit](https://gritframework.dev) — Go + React. Built with Grit.
+> OpenAI-compatible API gateway for MiMo Auto Free API
+
+[![CI](https://github.com/10xdev4u-alt/mimo-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/10xdev4u-alt/mimo-gateway/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## What is this?
+
+MiMo Gateway is a proxy that routes requests to the MiMo Auto Free API through the official `.mimocode` binary. It provides a standard OpenAI-compatible interface, so you can use any OpenAI SDK or tool with MiMo's free models.
+
+**Why a proxy?** The MiMo API gateway blocks direct HTTP calls via TLS fingerprinting (JA3). Only the official binary passes verification. This proxy wraps that binary and exposes a clean API.
+
+## Features
+
+- **OpenAI-compatible** — Drop-in replacement for `/v1/chat/completions`
+- **Streaming support** — SSE streaming for real-time responses
+- **Bifrost dashboard** — Dark-themed admin panel with real-time stats
+- **Rate limiting** — Configurable per-IP rate limits
+- **API key auth** — Secure access with API keys
+- **Docker ready** — One-command deployment
+- **CI/CD** — GitHub Actions for tests and security scanning
 
 ## Quick Start
 
 ```bash
-# 1. Install Air for Go hot reloading
-go install github.com/air-verse/air@latest
+# Clone
+git clone https://github.com/10xdev4u-alt/mimo-gateway.git
+cd mimo-gateway
 
-# 2. Start infrastructure (PostgreSQL, Redis, MinIO, Mailhog)
-docker compose up -d
+# Docker (recommended)
+docker compose -f docker-compose.dev.yml up -d
 
-# 3. Install frontend dependencies
-pnpm install
-
-# 4. Start all services (API auto-reloads on file changes)
-pnpm dev
+# Or manual
+cd apps/api
+go mod download
+go run ./cmd/server
 ```
 
-## Project Structure
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/v1/chat/completions` | Chat completion (OpenAI format) |
+| `GET` | `/v1/models` | List available models |
+| `GET` | `/health` | Health check |
+
+## Usage
+
+```bash
+# Test with curl
+curl http://localhost:4200/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mimo-auto",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+
+# Or with any OpenAI SDK
+export OPENAI_BASE_URL=http://localhost:4200/v1
+export OPENAI_API_KEY=your-api-key
+```
+
+## Architecture
 
 ```
-mimo-gateway/
-├── apps/
-│   ├── api/          # Go backend (Gin + GORM)
-│   ├── web/          # Next.js frontend
-│   └── admin/        # Next.js admin panel
-├── packages/
-│   └── shared/       # Shared types, schemas, constants
-├── docker-compose.yml
-└── turbo.json
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Client    │────▶│  MiMo Proxy  │────▶│  .mimocode  │
+│  (OpenAI)   │     │   (Go API)   │     │   binary    │
+└─────────────┘     └──────────────┘     └─────────────┘
+                           │
+                    ┌──────┴──────┐
+                    │   React     │
+                    │  Dashboard  │
+                    └─────────────┘
 ```
 
-## Services
+## Dashboard
 
-| Service       | URL                          |
-|---------------|------------------------------|
-| API           | http://localhost:8080         |
-| GORM Studio   | http://localhost:8080/studio  |
-| Web App       | http://localhost:3000         |
-| Admin Panel   | http://localhost:3001         |
-| PostgreSQL    | localhost:5434               |
-| Redis         | localhost:6380               |
-| MinIO Console | http://localhost:9003         |
-| Mailhog       | http://localhost:8025         |
+Access the admin dashboard at `http://localhost:4202`
+
+- Real-time request stats
+- API key management
+- Request logs
+- Model information
+- System health
+
+## Configuration
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `APP_PORT` | API server port | `4200` |
+| `JWT_SECRET` | JWT signing secret | (required) |
+| `DATABASE_URL` | PostgreSQL connection | (required) |
+| `MIMO_BIN_PATH` | Path to .mimocode binary | auto-detect |
+| `RATE_LIMIT` | Requests per minute | `100` |
 
 ## Development
 
 ```bash
-# Run Go API with hot reload
-cd apps/api && air
+# Backend
+cd apps/api
+go mod download
+go run ./cmd/server
 
-# Run Next.js web app
-cd apps/web && pnpm dev
-
-# Run admin panel
-cd apps/admin && pnpm dev
-
-# Run all services via Turborepo
+# Frontend
+cd apps/admin
+pnpm install
 pnpm dev
 ```
 
-## No Docker? No Problem
-
-If you can't run Docker, use cloud services instead:
+## Testing
 
 ```bash
-cp .env.cloud.example .env
+# Go tests
+cd apps/api
+go test -v ./...
+
+# Lint
+go vet ./...
 ```
 
-Then fill in your keys for:
-- **[Neon](https://neon.tech)** — PostgreSQL (free tier)
-- **[Upstash](https://upstash.com)** — Redis (free tier)
-- **[Cloudflare R2](https://dash.cloudflare.com)** — File storage (free tier)
-- **[Resend](https://resend.com)** — Email (free tier)
+## Deployment
 
-No Docker needed — just your API keys and ``go run``.
+```bash
+# Docker
+docker build -t mimo-gateway:latest .
+docker run -p 4200:4200 mimo-gateway:latest
 
-## Tech Stack
+# Or with docker-compose
+docker compose -f docker-compose.dev.yml up -d
+```
 
-- **Backend:** Go + Gin + GORM
-- **Frontend:** Next.js 14+ (App Router) + React + TypeScript
-- **Styling:** Tailwind CSS + shadcn/ui
-- **Database:** PostgreSQL
-- **Cache:** Redis
-- **Monorepo:** Turborepo + pnpm
-- **Validation:** Zod (shared schemas)
-- **Data Fetching:** React Query (TanStack Query)
+## Credits
+
+- Built with [Grit Framework](https://gritframework.dev)
+- Uses [MiMo Auto Free API](https://mimo.xiaomi.com/coder) by Xiaomi
+- Dashboard theme: Bifrost (custom dark theme)
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-*Built with Grit v3.31.37*
+**Powered by MiMo Auto Free API** 🔥
