@@ -26,6 +26,8 @@ jobs:
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Run govulncheck
+        working-directory: apps/api
+      - name: Run govulncheck
         run: govulncheck ./...
 
   npm-audit:
